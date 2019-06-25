@@ -15,7 +15,7 @@
 #include <atomic>
 #include <condition_variable>
 
-//#define DEBUG_INFLUXDB
+#define DEBUG_INFLUXDB
 
 namespace influxdb {
 
@@ -177,7 +177,7 @@ namespace influxdb {
     void InfluxDB::addGlobalFieldString(const std::string &name, const std::string &value) {
         if (name.empty()) return;
 
-        if (!mGlobalFields.empty()) mGlobalFields += ",";
+        mGlobalFields += ",";
         mGlobalFields += name;
         mGlobalFields += "=";
         mGlobalFields += "\"";
@@ -212,6 +212,15 @@ namespace influxdb {
     }
 
     std::string InfluxDB::toLineProtocol(const Metric &metric) {
+
+#ifdef DEBUG_INFLUXDB
+        std::cout << "measurement : " << metric.mMeasurement << std::endl;
+        std::cout << "globaltags  : " << mGlobalTags << std::endl;
+        std::cout << "tags        : " << metric.mTags << std::endl;
+        std::cout << "fields      : " << metric.mFields << std::endl;
+        std::cout << "globalfields: " << mGlobalFields << std::endl;
+#endif
+
         if (metric.mWithTimestamp)
             return metric.mMeasurement + mGlobalTags + metric.mTags + " " + metric.mFields + mGlobalFields + " " +
                    std::to_string(
@@ -289,6 +298,7 @@ namespace influxdb {
     }
 
     std::string Metric::toLineProtocol() {
+
         if (mWithTimestamp)
             return mMeasurement + mTags + " " + mFields + " " + std::to_string(
                     std::chrono::duration_cast<std::chrono::nanoseconds>(mTimestamp.time_since_epoch()).count());
