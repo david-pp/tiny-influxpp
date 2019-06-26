@@ -1,5 +1,10 @@
 # tiny-influxpp
 
+依赖：
+
+- C++ 11
+- libcurl
+
 用法：
 
 ``` C++
