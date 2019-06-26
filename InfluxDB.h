@@ -9,6 +9,8 @@
 #include <chrono>
 #include <deque>
 #include <memory>
+#include <sstream>
+#include <type_traits>
 
 namespace influxdb {
 
@@ -48,14 +50,11 @@ namespace influxdb {
         /// \param value
         void addGlobalTag(const std::string &name, const std::string &value);
 
-        void addGlobalFieldInt(const std::string &name, int value);
-
-        void addGlobalFieldFloat(const std::string &name, double value);
-
-        void addGlobalFieldString(const std::string &name, const std::string &value);
+        template <typename T>
+        void addGlobalField(const std::string& name, const T& value);
 
         /// Converts point to Influx Line Protocol
-        std::string toLineProtocol(const Metric& metric);
+        std::string toLineProtocol(const Metric &metric);
 
     private:
         /// Buffer for points
@@ -98,14 +97,11 @@ namespace influxdb {
         Metric &&tag(const std::string &key, const std::string &value);
 
         /// Adds filed
-        Metric &&fieldInt(const std::string &name, long value);
-
-        Metric &&fieldFloat(const std::string &name, double value);
-
-        Metric &&fieldString(const std::string &name, const std::string &value);
+        template<typename T>
+        Metric &&field(const std::string &name, const T &value);
 
         /// Add timestamp
-        Metric &&withTimestamp();
+        Metric &&timestamp();
 
         /// Generetes current timestamp
         static auto getCurrentTimestamp() -> decltype(std::chrono::system_clock::now());
@@ -129,6 +125,44 @@ namespace influxdb {
         /// Fields
         std::string mFields;
     };
+
+    template<typename T>
+    inline Metric &&Metric::field(const std::string &name, const T &value) {
+        if (name.empty())
+            return std::move(*this);
+
+        std::stringstream convert;
+        if (!mFields.empty()) convert << ",";
+
+        if (std::is_integral<T>::value || std::is_floating_point<T>::value) {
+            convert << name << "=";
+            convert << value;
+        } else {
+            convert << name << "=";
+            convert << '"' << value << '"';
+        }
+
+        mFields += convert.str();
+        return std::move(*this);
+    }
+
+    template <typename T>
+    inline void InfluxDB::addGlobalField(const std::string& name, const T& value) {
+        if (name.empty()) return;
+
+        std::stringstream convert;
+        convert << ",";
+
+        if (std::is_integral<T>::value || std::is_floating_point<T>::value) {
+            convert << name << "=";
+            convert << value;
+        } else {
+            convert << name << "=";
+            convert << '"' << value << '"';
+        }
+
+        mGlobalFields += convert.str();
+    }
 
 } // namespace influxdb
 

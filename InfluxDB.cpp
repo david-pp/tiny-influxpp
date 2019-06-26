@@ -155,36 +155,6 @@ namespace influxdb {
         mGlobalTags += value;
     }
 
-    void InfluxDB::addGlobalFieldInt(const std::string &name, int value) {
-        if (name.empty()) return;
-
-        mGlobalFields += ",";
-        mGlobalFields += name;
-        mGlobalFields += "=";
-        mGlobalFields += std::to_string(value);
-        mGlobalFields += "i";
-    }
-
-    void InfluxDB::addGlobalFieldFloat(const std::string &name, double value) {
-        if (name.empty()) return;
-
-        mGlobalFields += ",";
-        mGlobalFields += name;
-        mGlobalFields += "=";
-        mGlobalFields += std::to_string(value);
-    }
-
-    void InfluxDB::addGlobalFieldString(const std::string &name, const std::string &value) {
-        if (name.empty()) return;
-
-        mGlobalFields += ",";
-        mGlobalFields += name;
-        mGlobalFields += "=";
-        mGlobalFields += "\"";
-        mGlobalFields += value;
-        mGlobalFields += "\"";
-    }
-
     InfluxDB::~InfluxDB() {
         if (mBuffering) {
             flushBuffer();
@@ -236,47 +206,6 @@ namespace influxdb {
             mMeasurement(measurement), mTimestamp(Metric::getCurrentTimestamp()) {
     }
 
-    Metric &&Metric::fieldInt(const std::string &name, long value) {
-        if (name.empty())
-            return std::move(*this);
-
-        std::stringstream convert;
-        if (!mFields.empty()) convert << ",";
-
-        convert << name << "=";
-        convert << value << 'i';
-
-        mFields += convert.str();
-        return std::move(*this);
-    }
-
-    Metric &&Metric::fieldFloat(const std::string &name, double value) {
-        if (name.empty())
-            return std::move(*this);
-
-        std::stringstream convert;
-        if (!mFields.empty()) convert << ",";
-
-        convert << name << "=";
-        convert << value;
-
-        mFields += convert.str();
-        return std::move(*this);
-    }
-
-    Metric &&Metric::fieldString(const std::string &name, const std::string &value) {
-        if (name.empty()) return std::move(*this);
-
-        std::stringstream convert;
-        if (!mFields.empty()) convert << ",";
-
-        convert << name << "=";
-        convert << '"' << value << '"';
-
-        mFields += convert.str();
-        return std::move(*this);
-    }
-
     Metric &&Metric::tag(const std::string &key, const std::string &value) {
         if (key.empty() || value.empty())
             return std::move(*this);
@@ -288,7 +217,7 @@ namespace influxdb {
         return std::move(*this);
     }
 
-    Metric &&Metric::withTimestamp() {
+    Metric &&Metric::timestamp() {
         mWithTimestamp = true;
         return std::move(*this);
     }

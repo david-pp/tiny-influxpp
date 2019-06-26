@@ -21,21 +21,23 @@ void test_single() {
     influx->addGlobalTag("zone_id", "2208");
 
     // 全局Fields
-//    influx->addGlobalFieldInt("charid", charid);
-    influx->addGlobalFieldString("mac", "aa-bb-cc-dd");
+    influx->addGlobalField("charid", charid);
+    influx->addGlobalField("mac", "aa-bb-cc-dd");
 
 
     // 写入一条数据
     influx->write(Metric{"clientping"}
-//                          .tag("build", "2008")
-//                          .tag("version", "0.0.0")
-//                          .fieldInt("ping", 1024)
-//                          .fieldFloat("salary", 1024.6)
-                          .fieldString("name", "david"));
+                          .tag("build", "2008")
+                          .tag("version", "0.0.0")
+                          .field("ping", 1024)
+                          .field("salary", 1024.6)
+                          .field("name", "david")
+                          .timestamp());
 
     std::this_thread::sleep_for(std::chrono::milliseconds(1000));
 }
 
+#if 0
 void test_buffering() {
 
     using namespace influxdb;
@@ -54,8 +56,8 @@ void test_buffering() {
     influx->addGlobalTag("zone_id", "2208");
 
     // 全局Fields
-    influx->addGlobalFieldInt("charid", charid);
-    influx->addGlobalFieldString("mac", "aa-bb-cc-dd");
+//    influx->addGlobalFieldInt("charid", charid);
+//    influx->addGlobalFieldString("mac", "aa-bb-cc-dd");
 
 
     // 收集数据并不真实写
@@ -74,6 +76,8 @@ void test_buffering() {
     // 批量写入
     influx->flushBuffer();
 }
+
+#endif
 
 int main() {
     test_single();
